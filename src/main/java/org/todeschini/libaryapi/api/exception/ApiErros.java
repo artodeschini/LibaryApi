@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.validation.BindingResult;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Data
@@ -16,4 +17,9 @@ public class ApiErros {
         result.getAllErrors().forEach(erro -> this.erros.add(erro.getDefaultMessage()));
     }
 
+    public ApiErros(BussinessException e) {
+        //this.erros = new ArrayList<>(1);
+        //this.erros.add(e.getMessage());
+        this.erros = Arrays.asList(e.getMessage());
+    }
 }
