@@ -1,7 +1,5 @@
 package org.todeschini.libaryapi.model.repository;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,7 +10,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.todeschini.libaryapi.model.entity.Book;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
@@ -39,13 +38,20 @@ class BookRepositoryTest {
     void returnTrueWhenIsbnExist() {
         //given
         String isbn = "0123";
-        entityManager.persist(Book.builder().author("A").title("T").isbn(isbn).build());
+        Book book = createNewBook();
+        book.setIsbn(isbn);
+
+        entityManager.persist(book);
 
         //when
         boolean exist = repository.existsByIsbn(isbn);
 
         //then
         assertThat(exist).isTrue();
+    }
+
+    private Book createNewBook() {
+        return Book.builder().author("A").title("T").isbn("007").build();
     }
 
     @Test
@@ -59,5 +65,22 @@ class BookRepositoryTest {
 
         //then
         assertThat(exist).isFalse();
+    }
+
+    @Test
+    @DisplayName("deve obter um livro por id")
+    public void findByIdTest() {
+        // given
+        Book book = createNewBook();
+        entityManager.persist(book);
+
+        // when
+        Optional<Book> foundBook = repository.findById(book.getId());
+
+        // then
+        assertThat(foundBook.isPresent()).isTrue();
+        assertThat(foundBook.get().getAuthor()).isEqualTo(book.getAuthor());
+        assertThat(foundBook.get().getTitle()).isEqualTo(book.getTitle());
+        assertThat(foundBook.get().getIsbn()).isEqualTo(book.getIsbn());
     }
 }
