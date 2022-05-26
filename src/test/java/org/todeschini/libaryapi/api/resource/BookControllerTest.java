@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.BDDMockito;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -21,8 +20,11 @@ import org.todeschini.libaryapi.dto.BookDTO;
 import org.todeschini.libaryapi.model.entity.Book;
 import org.todeschini.libaryapi.service.BookService;
 
+import java.util.Optional;
+
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -49,15 +51,19 @@ public class BookControllerTest {
         return BookDTO.builder().author(author).title(title).isbn(isbn).build();
     }
 
-    @Test
-    @DisplayName("Deve criar um livro com sucesso")
-    public void createBookTest() throws Exception {
+    private Book createBookEntity() {
         String author = "Artur";
         String title = "My Book";
         String isbn = "007";
 
+        return Book.builder().id(1L).author(author).title(title).isbn(isbn).build();
+    }
+
+    @Test
+    @DisplayName("Deve criar um livro com sucesso")
+    public void createBookTest() throws Exception {
         BookDTO dto = createNewBookDTO();
-        Book bookSaved = Book.builder().id(1L).author(author).title(title).isbn(isbn).build();
+        Book bookSaved = createBookEntity();
 
         given(service.save(Mockito.any(Book.class))).willReturn(bookSaved);
 
@@ -99,6 +105,7 @@ public class BookControllerTest {
     @Test
     @DisplayName("Deve lancar erro ao tentar gravar um livro com isbn ja utilizado por outro")
     public void createBookWithDuplicatedIsbn() throws Exception {
+        //ginve
         BookDTO dto = createNewBookDTO();
         String json = new ObjectMapper().writeValueAsString(dto);
 
@@ -106,17 +113,62 @@ public class BookControllerTest {
 
         given(service.save(any(Book.class))).willThrow(new BussinessException(msgException));
 
+        //when
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
                 .post(BOOK_API)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(json);
 
+        // then
         mvc
                 .perform(request)
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("erros", hasSize(1)))
                 .andExpect(jsonPath("erros[0]").value(msgException));
     }
+
+    @Test
+    @DisplayName("Deve obter informacoes de um livro")
+    public void getBookDetailsTest() throws Exception {
+        //given
+        Long id = 1l;
+        Book book = createBookEntity();
+        given(service.getBookById(id)).willReturn(Optional.of(book));
+
+        //when
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get(BOOK_API.concat("/").concat(id.toString()))
+                .accept(MediaType.APPLICATION_JSON);
+
+
+        // then
+        mvc
+                .perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(id))
+                .andExpect(jsonPath("author").value(book.getAuthor()))
+                .andExpect(jsonPath("isbn").value(book.getIsbn()))
+                .andExpect(jsonPath("title").value(book.getTitle()));
+    }
+
+    @Test
+    @DisplayName("Deve retornar resource not found quando o livro informado nao existir")
+    public void bookNotFoundTest() throws Exception {
+        //given
+        given(service.getBookById(anyLong())).willReturn(Optional.empty());
+
+        //when
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get(BOOK_API.concat("/1"))
+                .accept(MediaType.APPLICATION_JSON);
+
+
+        // then
+        mvc
+                .perform(request)
+                .andExpect(status().isNotFound());
+    }
+
 
 }

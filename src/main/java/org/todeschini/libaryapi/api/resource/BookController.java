@@ -7,6 +7,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.todeschini.libaryapi.api.exception.ApiErros;
 import org.todeschini.libaryapi.api.exception.BussinessException;
 import org.todeschini.libaryapi.dto.BookDTO;
@@ -49,5 +50,12 @@ public class BookController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public @ResponseBody ApiErros handlerBusinessExceptions(BussinessException e) {
         return new ApiErros(e);
+    }
+
+    @GetMapping("{id}")
+    public BookDTO get(@PathVariable Long id) {
+//        Book book = service.getBookById(id).get();
+//        return modelMapper.map(book, BookDTO.class);
+        return service.getBookById(id).map(book -> modelMapper.map(book, BookDTO.class) ).orElseThrow( () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 }
