@@ -65,12 +65,13 @@ public class BookController {
     @PutMapping("{id}")
     @ResponseStatus(HttpStatus.OK)
     public BookDTO update(@PathVariable Long id, @RequestBody @Valid BookDTO dto) {
-        Book book = service.getBookById(id).orElseThrow( () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        book.setAuthor(dto.getAuthor());
-        book.setTitle(dto.getTitle());
-//        book.setIsbn(dto.getIsbn()); regra nao deve atualizar
-        book = service.update(book);
+        return service.getBookById(id).map( book -> {
+            book.setAuthor(dto.getAuthor());
+            book.setTitle(dto.getTitle());
+            book = service.update(book);
 
-        return modelMapper.map(book, BookDTO.class);
+            return modelMapper.map(book, BookDTO.class);
+
+        }).orElseThrow( () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 }
