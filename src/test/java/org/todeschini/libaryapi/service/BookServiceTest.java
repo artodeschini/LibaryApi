@@ -1,9 +1,6 @@
 package org.todeschini.libaryapi.service;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
@@ -119,5 +116,32 @@ class BookServiceTest {
 
         // then
         assertThat(foundBook.isPresent()).isFalse();
+    }
+
+    @Test
+    @DisplayName("deve obter um livro por id")
+    public void deleteBookByIdTest() {
+        // given
+        Book book = Book.builder().id(1l).build();
+
+        // when
+        // check if not throws any exception
+        Assertions.assertDoesNotThrow(() -> service.delete(book));
+
+        // then
+        verify(repository, times(1)).delete(book);
+    }
+
+    @Test
+    @DisplayName("deve ocorrer um erro ao tentar deletar um livro por id")
+    public void deleteNotFoundBookByIdTest() {
+        // given
+        Book book = Book.builder().build(); //no id and any others details
+
+        // when
+        Assertions.assertThrows(IllegalArgumentException.class, () -> service.delete(book));
+
+        // then
+        verify(repository, never()).delete(book);
     }
 }

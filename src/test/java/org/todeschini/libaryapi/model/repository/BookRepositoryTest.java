@@ -3,6 +3,7 @@ package org.todeschini.libaryapi.model.repository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
@@ -82,5 +83,19 @@ class BookRepositoryTest {
         assertThat(foundBook.get().getAuthor()).isEqualTo(book.getAuthor());
         assertThat(foundBook.get().getTitle()).isEqualTo(book.getTitle());
         assertThat(foundBook.get().getIsbn()).isEqualTo(book.getIsbn());
+    }
+
+    @Test
+    @DisplayName("deve obter um livro por id")
+    public void deleteBookByIdTest() {
+        // given
+        Book book = Book.builder().id(1l).build();
+
+        // when
+        repository.delete(book);
+
+
+        // then
+        Mockito.verify(repository, Mockito.times(1)).delete(book);
     }
 }
