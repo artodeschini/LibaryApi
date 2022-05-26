@@ -160,7 +160,7 @@ public class BookControllerTest {
 
         //when
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-                .get(BOOK_API.concat("/1"))
+                .delete(BOOK_API.concat("/1"))
                 .accept(MediaType.APPLICATION_JSON);
 
 
@@ -170,5 +170,42 @@ public class BookControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    @DisplayName("Deve deletar um livro")
+    public void deleteBookByIdTest() throws Exception {
+        //given
+        Long id = 1L;
+        Book book = createBookEntity();
+        given(service.getBookById(anyLong())).willReturn(Optional.of(book));
 
+        //when
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .delete(BOOK_API.concat("/").concat(id.toString()))
+                .accept(MediaType.APPLICATION_JSON);
+
+
+        // then
+        mvc
+                .perform(request)
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("Deve retornar not found quando nao encontrar o livro para deletar")
+    public void deleteBookNotFoundByIdTest() throws Exception {
+        //given
+        Long id = 1L;
+        given(service.getBookById(anyLong())).willReturn(Optional.empty());
+
+        //when
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .delete(BOOK_API.concat("/").concat(id.toString()))
+                .accept(MediaType.APPLICATION_JSON);
+
+
+        // then
+        mvc
+                .perform(request)
+                .andExpect(status().isNotFound());
+    }
 }

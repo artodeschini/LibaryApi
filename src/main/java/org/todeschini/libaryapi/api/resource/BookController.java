@@ -14,9 +14,7 @@ import org.todeschini.libaryapi.dto.BookDTO;
 import org.todeschini.libaryapi.model.entity.Book;
 import org.todeschini.libaryapi.service.BookService;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.io.Writer;
 
 @RestController
 @RequestMapping("/api/books")
@@ -54,8 +52,13 @@ public class BookController {
 
     @GetMapping("{id}")
     public BookDTO get(@PathVariable Long id) {
-//        Book book = service.getBookById(id).get();
-//        return modelMapper.map(book, BookDTO.class);
         return service.getBookById(id).map(book -> modelMapper.map(book, BookDTO.class) ).orElseThrow( () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    @DeleteMapping("{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        Book book = service.getBookById(id).orElseThrow( () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        service.delete(book);
     }
 }
