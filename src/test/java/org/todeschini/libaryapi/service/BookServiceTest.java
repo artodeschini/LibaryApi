@@ -1,6 +1,5 @@
 package org.todeschini.libaryapi.service;
 
-//import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,10 +12,11 @@ import org.todeschini.libaryapi.api.exception.BussinessException;
 import org.todeschini.libaryapi.model.entity.Book;
 import org.todeschini.libaryapi.model.repository.BookRepository;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchException;
 import static org.mockito.Mockito.*;
-//import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -82,5 +82,42 @@ class BookServiceTest {
 
         //verifico se nao chamou nenhuma vez o save do repository
         verify(repository, never()).save(book);
+    }
+
+    @Test
+    @DisplayName("Deve obter um livro por id")
+    public void getBookById() {
+        // given
+        Long id = 1l;
+
+        Book book = createValidBook();
+        book.setId(id);
+
+        when(repository.findById(id)).thenReturn(Optional.of(book));
+
+        // when
+        Optional<Book> foundBook = service.getBookById(id);
+
+        // then
+        assertThat(foundBook.isPresent()).isTrue();
+        assertThat(foundBook.get().getId()).isEqualTo(id);
+        assertThat(foundBook.get().getIsbn()).isEqualTo(book.getIsbn());
+        assertThat(foundBook.get().getTitle()).isEqualTo(book.getTitle());
+        assertThat(foundBook.get().getAuthor()).isEqualTo(book.getAuthor());
+    }
+
+    @Test
+    @DisplayName("Deve retornar vazio ao obter um livro por id")
+    public void getBookNotFoundById() {
+        // given
+        Long id = 1l;
+
+        when(repository.findById(id)).thenReturn(Optional.empty());
+
+        // when
+        Optional<Book> foundBook = service.getBookById(id);
+
+        // then
+        assertThat(foundBook.isPresent()).isFalse();
     }
 }
