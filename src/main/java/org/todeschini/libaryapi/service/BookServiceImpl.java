@@ -1,6 +1,7 @@
 package org.todeschini.libaryapi.service;
 
 import org.springframework.stereotype.Service;
+import org.todeschini.libaryapi.api.exception.BussinessException;
 import org.todeschini.libaryapi.model.entity.Book;
 import org.todeschini.libaryapi.model.repository.BookRepository;
 
@@ -15,6 +16,9 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book save(Book book) {
+        if (repository.existsByIsbn(book.getIsbn())) {
+            throw new BussinessException("Isbn já cadastrado!");
+        }
         return repository.save(book);
     }
 }

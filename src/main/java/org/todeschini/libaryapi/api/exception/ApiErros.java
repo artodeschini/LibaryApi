@@ -18,8 +18,6 @@ public class ApiErros {
     }
 
     public ApiErros(BussinessException e) {
-        //this.erros = new ArrayList<>(1);
-        //this.erros.add(e.getMessage());
         this.erros = Arrays.asList(e.getMessage());
     }
 }
