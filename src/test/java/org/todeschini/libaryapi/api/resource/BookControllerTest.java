@@ -141,7 +141,6 @@ public class BookControllerTest {
                 .get(BOOK_API.concat("/").concat(id.toString()))
                 .accept(MediaType.APPLICATION_JSON);
 
-
         // then
         mvc
                 .perform(request)
@@ -163,7 +162,6 @@ public class BookControllerTest {
                 .delete(BOOK_API.concat("/1"))
                 .accept(MediaType.APPLICATION_JSON);
 
-
         // then
         mvc
                 .perform(request)
@@ -183,7 +181,6 @@ public class BookControllerTest {
                 .delete(BOOK_API.concat("/").concat(id.toString()))
                 .accept(MediaType.APPLICATION_JSON);
 
-
         // then
         mvc
                 .perform(request)
@@ -202,6 +199,55 @@ public class BookControllerTest {
                 .delete(BOOK_API.concat("/").concat(id.toString()))
                 .accept(MediaType.APPLICATION_JSON);
 
+        // then
+        mvc
+                .perform(request)
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Deve atualizar  um livro")
+    public void updateBookTest() throws Exception {
+        //given
+        Long id = 1L;
+
+        String change = "change";
+
+        BookDTO dto = BookDTO.builder().id(id).title(change).author(change).isbn("007").build();
+
+        String json = new ObjectMapper().writeValueAsString(dto);
+
+        given(service.getBookById(anyLong())).willReturn(Optional.of(createBookEntity()));
+        given(service.update(any(Book.class))).willReturn(Book.builder().id(id).author(change).title(change).isbn("007").build());
+
+        //when
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .put(BOOK_API.concat("/").concat(id.toString()))
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        // then
+        mvc
+                .perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(id))
+                .andExpect(jsonPath("author").value(dto.getAuthor()))
+                .andExpect(jsonPath("isbn").value(dto.getIsbn()))
+                .andExpect(jsonPath("title").value(dto.getTitle()));
+    }
+
+    @Test
+    @DisplayName("Deve retornar 404 ao tentar atualizar um livro nao encontrado")
+    public void updateBookNotFoundTest() throws Exception {
+        //given
+        Long id = 1L;
+        given(service.getBookById(anyLong())).willReturn(Optional.empty());
+
+        //when
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .delete(BOOK_API.concat("/").concat(id.toString()))
+                .accept(MediaType.APPLICATION_JSON);
 
         // then
         mvc
