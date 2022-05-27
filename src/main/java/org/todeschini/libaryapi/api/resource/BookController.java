@@ -2,6 +2,9 @@ package org.todeschini.libaryapi.api.resource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
@@ -15,6 +18,8 @@ import org.todeschini.libaryapi.model.entity.Book;
 import org.todeschini.libaryapi.service.BookService;
 
 import javax.validation.Valid;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/books")
@@ -73,5 +78,17 @@ public class BookController {
             return modelMapper.map(book, BookDTO.class);
 
         }).orElseThrow( () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    @GetMapping
+    public Page<BookDTO> find(BookDTO dto, Pageable pageRequest) {
+        Book filter = modelMapper.map(dto, Book.class);
+        Page<Book> result = service.find(filter, pageRequest);
+
+        List<BookDTO> list = result.stream()
+                .map(entity -> modelMapper.map(entity, BookDTO.class))
+                .collect( Collectors.toList());
+
+        return new PageImpl<BookDTO>( list, pageRequest, result.getTotalElements());
     }
 }

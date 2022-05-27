@@ -287,5 +287,4 @@ public class BookControllerTest {
                 .andExpect(jsonPath("pageable.pageSize").value(100))
                 .andExpect(jsonPath("pageable.pageNumber").value(0));
     }
-
 }
