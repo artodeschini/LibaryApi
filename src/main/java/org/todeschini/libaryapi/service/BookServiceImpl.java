@@ -1,5 +1,7 @@
 package org.todeschini.libaryapi.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.todeschini.libaryapi.api.exception.BussinessException;
 import org.todeschini.libaryapi.model.entity.Book;
@@ -45,5 +47,10 @@ public class BookServiceImpl implements BookService {
         } else {
             return repository.save(book);
         }
+    }
+
+    @Override
+    public Page<Book> find(Book filter, Pageable pageRequest) {
+        return null;
     }
 }
