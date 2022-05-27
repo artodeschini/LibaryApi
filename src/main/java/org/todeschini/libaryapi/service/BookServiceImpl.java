@@ -40,6 +40,10 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book update(Book book) {
-        return null;
+        if (book == null || book.getId() == null) {
+            throw new IllegalArgumentException("Book id can be null");
+        } else {
+            return repository.save(book);
+        }
     }
 }

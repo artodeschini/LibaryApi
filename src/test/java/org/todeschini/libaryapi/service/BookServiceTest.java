@@ -13,6 +13,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchException;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
@@ -126,7 +128,7 @@ class BookServiceTest {
 
         // when
         // check if not throws any exception
-        Assertions.assertDoesNotThrow(() -> service.delete(book));
+        assertDoesNotThrow(() -> service.delete(book));
 
         // then
         verify(repository, times(1)).delete(book);
@@ -139,7 +141,41 @@ class BookServiceTest {
         Book book = Book.builder().build(); //no id and any others details
 
         // when
-        Assertions.assertThrows(IllegalArgumentException.class, () -> service.delete(book));
+        assertThrows(IllegalArgumentException.class, () -> service.delete(book));
+
+        // then
+        verify(repository, never()).delete(book);
+    }
+
+    @Test
+    @DisplayName("deve ataulizar um livro por id")
+    public void updateBookByIdTest() {
+        // given
+        long id = 1L;
+        Book book = Book.builder().id(id).build(); //entity retrive
+        Book change = createValidBook();
+        change.setId(id);
+
+        when(repository.save(book)).thenReturn(change);
+
+        // when
+        Book updateBook = service.save(book);
+
+        // then
+        assertThat(updateBook.getId()).isEqualTo(id);
+        assertThat(updateBook.getTitle()).isEqualTo(change.getTitle());
+        assertThat(updateBook.getAuthor()).isEqualTo(change.getAuthor());
+        assertThat(updateBook.getIsbn()).isEqualTo(change.getIsbn());
+    }
+
+    @Test
+    @DisplayName("deve ocorrer um erro ao tentar alterar um livro por id")
+    public void updateNotFoundBookByIdTest() {
+        // given
+        Book book = Book.builder().build(); //no id and any others details
+
+        // when
+        assertThrows(IllegalArgumentException.class, () -> service.update(book));
 
         // then
         verify(repository, never()).delete(book);
