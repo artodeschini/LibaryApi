@@ -1,10 +1,8 @@
 package org.todeschini.libaryapi.model.repository;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
@@ -87,15 +85,31 @@ class BookRepositoryTest {
     }
 
     @Test
-    @Disabled
-    @DisplayName("deve obter um livro por id")
-    public void deleteBookByIdTest() {
+    @DisplayName("deve salvar um livro")
+    public void saveBookTest() {
         // given
-        Book book = Book.builder().id(1l).build();
+        Book book = createNewBook();
 
         // when
-        repository.delete(book);
+        Book savedBook = repository.save(book);
+
         // then
-        Mockito.verify(repository, Mockito.times(1)).delete(book);
+        assertThat(savedBook.getId()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("deve deletar um livro")
+    public void deleteBookByIdTest() {
+        // given
+        Book book = createNewBook();
+        entityManager.persist(book);
+        Book found = entityManager.find(Book.class, book.getId());
+
+        // when
+        repository.delete(found);
+
+        // then
+        Book deleted = entityManager.find(Book.class, book.getId());
+        assertThat(deleted).isNull();
     }
 }
