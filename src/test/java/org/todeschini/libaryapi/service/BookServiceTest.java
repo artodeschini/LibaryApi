@@ -3,12 +3,18 @@ package org.todeschini.libaryapi.service;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.todeschini.libaryapi.api.exception.BussinessException;
 import org.todeschini.libaryapi.model.entity.Book;
 import org.todeschini.libaryapi.model.repository.BookRepository;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -179,5 +185,28 @@ class BookServiceTest {
 
         // then
         verify(repository, never()).delete(book);
+    }
+
+    @Test
+    @DisplayName("deve filtar livros pelas propriedades")
+    public void findBookTest() {
+        // given
+        Book book = createValidBook();
+        book.setId(1l);
+
+        PageRequest pageRequest = PageRequest.of(0, 10);
+
+        List<Book> books = Arrays.asList(book);
+        Page<Book> page = new PageImpl<>(books, pageRequest, 1);
+        when(repository.findAll(any(Example.class), any(PageRequest.class))).thenReturn(page);
+
+        // when
+        Page<Book> result = service.find(book, pageRequest);
+
+        //then
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent()).isEqualTo(books);
+        assertThat(result.getPageable().getPageNumber()).isEqualTo(0);
+        assertThat(result.getPageable().getPageSize()).isEqualTo(10);
     }
 }
