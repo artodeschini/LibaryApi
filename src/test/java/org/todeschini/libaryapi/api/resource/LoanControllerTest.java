@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.todeschini.libaryapi.dto.LoanDTO;
+import org.todeschini.libaryapi.exception.BussinessException;
 import org.todeschini.libaryapi.model.entity.Book;
 import org.todeschini.libaryapi.model.entity.Loan;
 import org.todeschini.libaryapi.service.BookService;
@@ -75,17 +76,12 @@ public class LoanControllerTest {
 
     @Test
     @DisplayName("deve retornar erro ao tentar criar um emprestimo de livro nao existente")
-    public void invalidIsbnToCeateLoadTest() throws Exception {
+    public void invalidIsbnToCreateLoadTest() throws Exception {
         // given
         LoanDTO dto = LoanDTO.builder().isbn("0123").customer("SomeOne").build();
         String json = new ObjectMapper().writeValueAsString(dto);
 
-//        Book book = Book.builder().id(123L).isbn(dto.getIsbn()).title("Title").author("Author").build();
-
         given(bookService.findBookByIsbn(dto.getIsbn())).willReturn(Optional.empty());
-
-//        Loan loan = Loan.builder().id(1l).book(book).customer("Artur").date(LocalDate.now()).build();
-//        given(loanService.save(Mockito.any(Loan.class))).willReturn(loan);
 
         // when
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(LOAN_API)
@@ -98,5 +94,31 @@ public class LoanControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("erros", Matchers.hasSize(1)))
                 .andExpect(jsonPath( "erros[0]").value("Book not found for isbn"));
+    }
+
+    @Test
+    @DisplayName("deve retornar erro ao tentar criar um emprestimo de livro já emprestado")
+    public void loanedBookErrorCreateLoadTest() throws Exception {
+        // given
+        LoanDTO dto = LoanDTO.builder().isbn("0123").customer("SomeOne").build();
+        String json = new ObjectMapper().writeValueAsString(dto);
+
+        Book book = Book.builder().id(123L).isbn(dto.getIsbn()).title("Title").author("Author").build();
+
+        given(bookService.findBookByIsbn(dto.getIsbn())).willReturn(Optional.of(book));
+
+        given(loanService.save(Mockito.any(Loan.class))).willThrow(new BussinessException("Book already loanned"));
+
+        // when
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(LOAN_API)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        // then
+        mvc.perform(request)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("erros", Matchers.hasSize(1)))
+                .andExpect(jsonPath( "erros[0]").value("Book already loanned"));
     }
 }
