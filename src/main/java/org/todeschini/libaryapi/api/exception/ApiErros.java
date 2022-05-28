@@ -2,6 +2,8 @@ package org.todeschini.libaryapi.api.exception;
 
 import lombok.Data;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.server.ResponseStatusException;
+import org.todeschini.libaryapi.exception.BussinessException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,5 +21,9 @@ public class ApiErros {
 
     public ApiErros(BussinessException e) {
         this.erros = Arrays.asList(e.getMessage());
+    }
+
+    public ApiErros(ResponseStatusException e) {
+        this.erros = Arrays.asList(e.getReason());
     }
 }

@@ -1,18 +1,12 @@
 package org.todeschini.libaryapi.api.resource;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.HttpMediaTypeNotAcceptableException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import org.todeschini.libaryapi.api.exception.ApiErros;
-import org.todeschini.libaryapi.api.exception.BussinessException;
 import org.todeschini.libaryapi.dto.BookDTO;
 import org.todeschini.libaryapi.model.entity.Book;
 import org.todeschini.libaryapi.service.BookService;
@@ -40,19 +34,6 @@ public class BookController {
         entity = service.save(entity);
 
         return modelMapper.map(entity, BookDTO.class);
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public @ResponseBody ApiErros handlerValidationExceptions(MethodArgumentNotValidException e) {
-        BindingResult result = e.getBindingResult();
-        return new ApiErros(result);
-    }
-
-    @ExceptionHandler(BussinessException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public @ResponseBody ApiErros handlerBusinessExceptions(BussinessException e) {
-        return new ApiErros(e);
     }
 
     @GetMapping("{id}")

@@ -5,7 +5,7 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.todeschini.libaryapi.api.exception.BussinessException;
+import org.todeschini.libaryapi.exception.BussinessException;
 import org.todeschini.libaryapi.model.entity.Book;
 import org.todeschini.libaryapi.model.repository.BookRepository;
 
@@ -61,5 +61,10 @@ public class BookServiceImpl implements BookService {
                         .withStringMatcher(ExampleMatcher.StringMatcher.ENDING) // is same is like in end
         );
         return repository.findAll(example, pageRequest);
+    }
+
+    @Override
+    public Optional<Book> findBookByIsbn(String isbn) {
+        return null;
     }
 }
