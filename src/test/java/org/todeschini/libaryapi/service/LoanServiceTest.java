@@ -14,6 +14,7 @@ import org.todeschini.libaryapi.model.entity.Loan;
 import org.todeschini.libaryapi.model.repository.LoanRepository;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -65,17 +66,27 @@ public class LoanServiceTest {
         assertThat(saved.getDate()).isEqualTo(LocalDate.now());
     }
 
-    @Test
-    @DisplayName("deve lancar um erro de negocio ao salvar emprestimo com livro ja emprestado")
-    public void saveLoanThrowsBusinessExceptionTest() {
+    public static Book createBookValid() {
+        return Book.builder().id(1l).isbn("i").build();
+    }
+
+    public static Loan createtValidLoan() {
         // given
-        Book book = Book.builder().id(1l).isbn("i").build();
-        Loan loan = Loan.builder()
+        Book book = createBookValid();
+        return Loan.builder()
                 .book(book)
                 .customer("Artur")
                 .date(LocalDate.now())
                 .build();
 
+
+    }
+
+    @Test
+    @DisplayName("deve lancar um erro de negocio ao salvar emprestimo com livro ja emprestado")
+    public void saveLoanThrowsBusinessExceptionTest() {
+        Book book = createBookValid();
+        Loan loan = createtValidLoan();
         when(repository.existsByBookAndNotReturned(book)).thenReturn(true);
 
         // when
@@ -85,5 +96,40 @@ public class LoanServiceTest {
         assertThat(t).hasMessage("Book already loaned");
 
         verify(repository, never()).save(loan);
+    }
+
+    @Test
+    @DisplayName("deve obter as informacoes de um emprestipo por id")
+    public void getLoanDetaisById() {
+        Long id = 1l;
+        Loan loan = createtValidLoan();
+        loan.setId(id);
+
+        when(repository.findById(id)).thenReturn(Optional.of(loan));
+
+        Optional<Loan> result = service.getById(id);
+
+        assertThat(result.isEmpty()).isTrue();
+        assertThat(result.get().getId()).isEqualTo(id);
+        assertThat(result.get().getCustomer()).isEqualTo(loan.getCustomer());
+        assertThat(result.get().getBook()).isEqualTo(loan.getBook());
+        assertThat(result.get().getDate()).isEqualTo(loan.getDate());
+
+        verify(repository).findById(id);
+    }
+
+    @Test
+    @DisplayName("Deve atualizar emprestimo")
+    public void updateLoanUpdate() {
+        Loan loan = createtValidLoan();
+        loan.setId(1l);
+        loan.setReturned(true);
+
+        when(repository.save(any(Loan.class))).thenReturn(loan);
+
+        Loan updateReturnedLoan = service.update(loan);
+
+        assertThat(updateReturnedLoan.isReturned()).isTrue();
+        verify(repository.save(loan));
     }
 }
