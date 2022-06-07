@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.todeschini.libaryapi.dto.LoanDTO;
+import org.todeschini.libaryapi.dto.RetornedLoanDTO;
 import org.todeschini.libaryapi.exception.BussinessException;
 import org.todeschini.libaryapi.model.entity.Book;
 import org.todeschini.libaryapi.model.entity.Loan;
@@ -27,7 +28,11 @@ import org.todeschini.libaryapi.service.LoanService;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
@@ -93,7 +98,7 @@ public class LoanControllerTest {
         mvc.perform(request)
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("erros", Matchers.hasSize(1)))
-                .andExpect(jsonPath( "erros[0]").value("Book not found for isbn"));
+                .andExpect(jsonPath("erros[0]").value("Book not found for isbn"));
     }
 
     @Test
@@ -119,6 +124,54 @@ public class LoanControllerTest {
         mvc.perform(request)
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("erros", Matchers.hasSize(1)))
-                .andExpect(jsonPath( "erros[0]").value("Book already loanned"));
+                .andExpect(jsonPath("erros[0]").value("Book already loanned"));
+    }
+
+    @Test
+    @DisplayName("deve retornor um livro")
+    public void returnBookTest() throws Exception {
+        // given
+        RetornedLoanDTO dto = RetornedLoanDTO.builder().returned(true).build();
+        Loan loan = Loan.builder().id(1l).build();
+
+        given(loanService.getById(anyLong())).willReturn(Optional.of(loan));
+
+        String json = new ObjectMapper().writeValueAsString(dto);
+
+        // when
+        mvc.perform(
+                patch(LOAN_API.concat("/1"))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+
+
+        ).andExpect( status().isOk());
+
+        // then
+        verify(loanService, times(1)).update(loan);
+    }
+
+    @Test
+    @DisplayName("deve retornor 404 quanto tentar devolver um livro inexistente")
+    public void returnInexistentBookTest() throws Exception {
+        // given
+        RetornedLoanDTO dto = RetornedLoanDTO.builder().returned(true).build();
+        given(loanService.getById(anyLong())).willReturn(Optional.empty());
+
+        String json = new ObjectMapper().writeValueAsString(dto);
+
+        // when
+        mvc.perform(
+                patch(LOAN_API.concat("/1"))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+
+
+        ).andExpect( status().isNotFound());
+
+        // then
+//        verify(loanService, times(1)).update(loan);
     }
 }

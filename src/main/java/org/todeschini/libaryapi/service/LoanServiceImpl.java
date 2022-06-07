@@ -4,6 +4,8 @@ import org.todeschini.libaryapi.exception.BussinessException;
 import org.todeschini.libaryapi.model.entity.Loan;
 import org.todeschini.libaryapi.model.repository.LoanRepository;
 
+import java.util.Optional;
+
 public class LoanServiceImpl implements LoanService {
 
     private LoanRepository repository;
@@ -18,5 +20,15 @@ public class LoanServiceImpl implements LoanService {
             throw new BussinessException("Book already loaned");
         }
         return repository.save(loan);
+    }
+
+    @Override
+    public Optional<Loan> getById(Long id) {
+        return Optional.empty();
+    }
+
+    @Override
+    public void update(Loan loan) {
+
     }
 }

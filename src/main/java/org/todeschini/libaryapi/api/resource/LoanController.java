@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.todeschini.libaryapi.dto.LoanDTO;
+import org.todeschini.libaryapi.dto.RetornedLoanDTO;
 import org.todeschini.libaryapi.model.entity.Book;
 import org.todeschini.libaryapi.model.entity.Loan;
 import org.todeschini.libaryapi.service.BookService;
@@ -36,5 +37,16 @@ public class LoanController {
         entity = service.save(entity);
 
         return entity;
+    }
+
+    @PatchMapping("{id}")
+    public void returnBook(@PathVariable Long id,
+                           @RequestBody RetornedLoanDTO dto) {
+
+        Loan loan = service.getById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        loan.setReturned(dto.getReturned());
+
+        service.update(loan);
     }
 }
