@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.todeschini.libaryapi.exception.BussinessException;
 import org.todeschini.libaryapi.model.entity.Book;
 import org.todeschini.libaryapi.model.entity.Loan;
 import org.todeschini.libaryapi.model.repository.LoanRepository;
@@ -15,7 +16,8 @@ import org.todeschini.libaryapi.model.repository.LoanRepository;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -49,6 +51,7 @@ public class LoanServiceTest {
                 .date(enviado.getDate())
                 .build();
 
+        when(repository.existsByBookAndNotReturned(book)).thenReturn(false);
         when(repository.save(enviado)).thenReturn(loanMock);
 
         // when
@@ -60,5 +63,27 @@ public class LoanServiceTest {
         assertThat(saved.getBook().getId()).isEqualTo(book.getId());
         assertThat(saved.getCustomer()).isEqualTo(loanMock.getCustomer());
         assertThat(saved.getDate()).isEqualTo(LocalDate.now());
+    }
+
+    @Test
+    @DisplayName("deve lancar um erro de negocio ao salvar emprestimo com livro ja emprestado")
+    public void saveLoanThrowsBusinessExceptionTest() {
+        // given
+        Book book = Book.builder().id(1l).isbn("i").build();
+        Loan loan = Loan.builder()
+                .book(book)
+                .customer("Artur")
+                .date(LocalDate.now())
+                .build();
+
+        when(repository.existsByBookAndNotReturned(book)).thenReturn(true);
+
+        // when
+        Throwable t = catchThrowable( () -> service.save(loan));
+
+        assertThat(t).isInstanceOf(BussinessException.class);
+        assertThat(t).hasMessage("Book already loaned");
+
+        verify(repository, never()).save(loan);
     }
 }
