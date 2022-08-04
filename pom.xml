@@ -10,8 +10,8 @@
 	</parent>
 	<groupId>org.todeschini</groupId>
 	<artifactId>libary-api</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>libary-api</name>
+	<version>1.0.0</version>
+	<name>libary</name>
 	<description>Api de Biblioteca com Spring</description>
 	<properties>
 		<java.version>11</java.version>
@@ -47,20 +47,17 @@
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
-
 		<dependency>
 			<groupId>org.modelmapper</groupId>
 			<artifactId>modelmapper</artifactId>
 			<version>3.0.0</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
 	<build>
 		<plugins>
 			<plugin>
@@ -77,5 +74,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

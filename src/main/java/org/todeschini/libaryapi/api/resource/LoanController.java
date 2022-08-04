@@ -1,7 +1,8 @@
 package org.todeschini.libaryapi.api.resource;
 
-import lombok.RequiredArgsConstructor;
+//import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -23,13 +24,22 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/loans")
-@RequiredArgsConstructor // cria um construtor com os argumentos requeridos
-
 public class LoanController {
 
-    private final LoanService service;
-    private final BookService bookService;
-    private final ModelMapper modelMapper;
+
+//    @Autowired
+    private LoanService service;
+//    @Autowired
+    private BookService bookService;
+
+    @Autowired
+    private ModelMapper modelMapper;
+
+    public LoanController(LoanService service, BookService bookService, ModelMapper modelMapper) {
+        this.service = service;
+        this.bookService = bookService;
+        this.modelMapper = modelMapper;
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

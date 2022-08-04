@@ -35,7 +35,7 @@ class BookRepositoryTest {
 
     @Test
     @DisplayName("Deve retornar verdadeiro quanto existir um livro com o isbn informado")
-    void returnTrueWhenIsbnExist() {
+    public void returnTrueWhenIsbnExist() {
         //given
         String isbn = "0123";
         Book book = createNewBook();
